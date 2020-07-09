@@ -15,6 +15,8 @@ bool Shape::Load(const std::string& filename)
 		success = true;
 
 		//read color
+		stream >> m_color;
+
 		//read points
 		while (!stream.eof())
 		{
@@ -59,4 +61,8 @@ void Shape::Draw(Core::Graphics& graphics, nc::Vector2 position, float scale, fl
 		graphics.DrawLine(p1.x, p1.y, p2.x, p2.y);
 	}
 }
+	void Shape::Draw(Core::Graphics& graphics, const Transform& transform)
+	{
+		Draw(graphics, transform.position, transform.scale, transform.angle);
+	}
 }

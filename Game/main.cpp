@@ -3,18 +3,15 @@
 #include "core.h"
 #include "Math/Math.h"
 #include "Math/Random.h"
-#include "Math/Vector2.h"
-#include "Math/Color.h"
 #include "Graphics/Shape.h"
+#include "Math/Transform.h"
 #include <iostream>
 #include <string>
 
 
 nc::Shape ship;
 
-nc::Vector2 position{ 400.0f, 300.0f };
-float scale = 5.0f;
-float angle = 0.0f;
+nc::Transform transform{ { 400, 300}, 4, 0 };
 
 float speed = 300.0f;
 
@@ -54,20 +51,20 @@ bool Update(float dt)
 	nc::Vector2 force;
 	if (Core::Input::IsPressed('W')) { force = nc::Vector2::forward * speed; }
 	nc::Vector2 direction = force * dt;
-	direction = nc::Vector2::Rotate(direction, angle);
+	direction = nc::Vector2::Rotate(direction, transform.angle);
 
-	position = position + direction;
+	transform.position = transform.position + direction;
 
-	if (position.x > 800.0f) position.x = 0;
-	if (position.x < 0) position.x = 800;
-	if (position.y > 600.0f) position.y = 0;
-	if (position.y < 0) position.y = 600;
+	if (transform.position.x > 800.0f) transform.position.x = 0;
+	if (transform.position.x < 0)transform.position.x = 800;
+	if (transform.position.y > 600.0f) transform.position.y = 0;
+	if (transform.position.y < 0) transform.position.y = 600;
 
 	//if (Core::Input::IsPressed('A')) position += nc::Vector2::left * (speed * dt);
 	//if (Core::Input::IsPressed('D')) position += nc::Vector2::right * (speed * dt);
 
-	if (Core::Input::IsPressed('A')) angle -= dt * nc::TWO_PI;
-	if (Core::Input::IsPressed('D')) angle += dt * nc::TWO_PI;
+	if (Core::Input::IsPressed('A')) transform.angle -= dt * nc::TWO_PI;
+	if (Core::Input::IsPressed('D')) transform.angle += dt * nc::TWO_PI;
 
 	return quit;
 }
@@ -76,6 +73,7 @@ bool Update(float dt)
 
 void Draw(Core::Graphics& graphics)
 {
+	graphics.SetColor(nc::Color{ 1, 1, 1 });
 	graphics.DrawString(10, 10, std::to_string(frameTime).c_str());
 	graphics.DrawString(10, 20, std::to_string(1.0f/ frameTime).c_str());
 	graphics.DrawString(10, 30, std::to_string(deltaTime / 1000.0f).c_str());
@@ -86,7 +84,7 @@ void Draw(Core::Graphics& graphics)
 
 	//graphics.DrawLine(static_cast<float>(rand() % 800), static_cast<float>(rand() % 600),
 
-	ship.Draw(graphics, position, scale, angle);
+	ship.Draw(graphics, transform);
 }
 
 
@@ -97,7 +95,7 @@ int main()
 	std::cout << time / 1000/ 60 / 60 / 24 << std::endl;
 
 	ship.Load("ship.txt");
-	ship.SetColor({ 1,1,1 });
+
 
 	char name[] = "CSC196";
 	Core::Init(name, 800, 600); 

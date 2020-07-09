@@ -1,5 +1,7 @@
 #pragma once
 #include <windows.h>
+#include <fstream>
+#include <string>
 
 namespace nc
 {
@@ -34,6 +36,8 @@ namespace nc
 		Color& operator -= (float s) { r -= s; g -= s; b -= s; return *this; }
 		Color& operator *= (float s) { r *= s; g *= s; b *= s; return *this; }
 		Color& operator /= (float s) { r /= s; g /= s; b /= s; return *this; }
+
+		friend std::istream& operator >> (std::istream& stream, Color& c);
 
 		COLORREF Pack888() const;
 		operator COLORREF() const { return Pack888(); }
