@@ -17,6 +17,7 @@ namespace nc
 		float& operator [] (size_t index) { return (&x)[index]; }
 		const float& operator [] (size_t index) const { return (&x)[index]; }
 
+
 		void Set(float x, float y) { this->x = x; this->y = y; }
 
 		Vector2 operator + (const Vector2& v) const { return Vector2{ x + v.x , y + v.y }; }
@@ -94,7 +95,8 @@ namespace nc
 		}
 	}
 
-	inline float Distance(const Vector2& v1, const Vector2& v2)
+
+	inline float Vector2::Distance(const Vector2& v1, const Vector2& v2)
 	{
 		Vector2 v = v1 - v2;
 

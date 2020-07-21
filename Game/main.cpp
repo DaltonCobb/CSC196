@@ -5,66 +5,75 @@
 #include "Math/Random.h"
 #include "Graphics/Shape.h"
 #include "Math/Transform.h"
+#include "Object/Actor.h"
+#include "Actors/player.h"
+#include "Actors/enemy.h"
+#include "Graphics/ParticalSystem.h"
 #include <iostream>
 #include <string>
+#include <list>
+#include <Object\Scene.h>
 
 
-nc::Shape ship;
+//Enemy enemy;
+nc::Scene scene;
+nc::ParticleSystem particleSystem;
 
-nc::Transform transform{ { 400, 300}, 4, 0 };
-
-float speed = 300.0f;
 
 float frameTime;
-float roundTime{ 0 };
-bool gameOver{ false };
+float spawnTimer{ 0 };
+
+float t{ 0 };
+
 DWORD prevTime;
 DWORD deltaTime;
 
 bool Update(float dt)
 {
 	frameTime = dt;
-	roundTime += dt;
-	if (roundTime >= 5) gameOver = true;
 
 
-	if (gameOver) dt = 0;
+	bool quit = Core::Input::IsPressed(Core::Input::KEY_ESCAPE);
+	
+	t = t + (dt * 2.0f);
+
 	// get delta time
 	DWORD time = GetTickCount();
 	deltaTime = time - prevTime;
 	prevTime = time;
+	spawnTimer += dt;
+	if (spawnTimer >= 3.0f)
+	{
+		spawnTimer = 0;
+
+	
+
+		Enemy* enemey = new Enemy;
+		enemey->Load("enemy.txt");
+		enemey->SetTarget(scene.GetActor<nc::Player>());
+		enemey->SetSpeed(nc::random(50, 100));
+		enemey->GetTransform().position = nc::Vector2{ nc::random(0, 800), nc::random(0 , 600) };
+		scene.AddActor(enemey);
+
+	}
 
 
-	bool quit = Core::Input::IsPressed(Core::Input::KEY_ESCAPE);
+	nc::Player* player = scene.GetActor<nc::Player>();
+	particleSystem.Create(player->GetTransform().position, player->GetTransform().angle + nc::PI , 10, 1, 1, nc::Color{ 1,1,1 }, 100, 200);
 
 	int x, y;
 	Core::Input::GetMousePos(x, y);
+	if (Core::Input::IsPressed(Core::Input::BUTTON_LEFT))
+	{
+		nc::Color colors[] = { nc::Color::white, nc::Color::red,nc::Color::green, nc::Color::blue };
+		nc::Color color = colors[rand() % 4];
+		particleSystem.Create({ x,y }, 0, 180, 30, 1, color, 100, 200);
+	}
 
-	//nc::Vector2 target = nc::Vector2{ x,y };
-	//nc::Vector2 direction = target - position;
 
-//	direction.Normalize();
 
-	//if (direction.Length() < 50.0f)
-	
-	//	position = position + (-direction * speed);
-	nc::Vector2 force;
-	if (Core::Input::IsPressed('W')) { force = nc::Vector2::forward * speed; }
-	nc::Vector2 direction = force * dt;
-	direction = nc::Vector2::Rotate(direction, transform.angle);
-
-	transform.position = transform.position + direction;
-
-	if (transform.position.x > 800.0f) transform.position.x = 0;
-	if (transform.position.x < 0)transform.position.x = 800;
-	if (transform.position.y > 600.0f) transform.position.y = 0;
-	if (transform.position.y < 0) transform.position.y = 600;
-
-	//if (Core::Input::IsPressed('A')) position += nc::Vector2::left * (speed * dt);
-	//if (Core::Input::IsPressed('D')) position += nc::Vector2::right * (speed * dt);
-
-	if (Core::Input::IsPressed('A')) transform.angle -= dt * nc::TWO_PI;
-	if (Core::Input::IsPressed('D')) transform.angle += dt * nc::TWO_PI;
+	particleSystem.Update(dt);
+	scene.Update(dt);
 
 	return quit;
 }
@@ -76,26 +85,39 @@ void Draw(Core::Graphics& graphics)
 	graphics.SetColor(nc::Color{ 1, 1, 1 });
 	graphics.DrawString(10, 10, std::to_string(frameTime).c_str());
 	graphics.DrawString(10, 20, std::to_string(1.0f/ frameTime).c_str());
-	graphics.DrawString(10, 30, std::to_string(deltaTime / 1000.0f).c_str());
 
-	if (gameOver)graphics.DrawString(400, 300, "GameOver!");
-	//graphics.SetColor(color);
+	
+	//enemy.Draw(graphics);
 
-
-	//graphics.DrawLine(static_cast<float>(rand() % 800), static_cast<float>(rand() % 600),
-
-	ship.Draw(graphics, transform);
+	particleSystem.Draw(graphics);
+	scene.Draw(graphics);
 }
 
 
 
 int main()
 {
-	DWORD time = GetTickCount();
-	std::cout << time / 1000/ 60 / 60 / 24 << std::endl;
+	scene.Startup();
+	particleSystem.Startup();
 
-	ship.Load("ship.txt");
+	nc::Actor* player = new nc::Player;
+	player->Load("player.txt");
+	scene.AddActor(player);
 
+	
+	//enemy.Load("enemy.txt");
+	//enemy.SetTarget(player);
+
+	for (size_t i = 0; i < 3; i++)
+	{
+	nc::Actor* actor = new Enemy;
+	actor->Load("enemy.txt");
+	dynamic_cast<Enemy*>(actor)->SetTarget(player);
+	dynamic_cast<Enemy*>(actor)->SetSpeed(nc::random(50, 100));
+	actor->GetTransform().position = nc::Vector2{ nc::random(0, 800), nc::random(0 , 600) };
+	scene.AddActor(actor);
+
+	}
 
 	char name[] = "CSC196";
 	Core::Init(name, 800, 600); 
@@ -104,5 +126,8 @@ int main()
 	
 	Core::GameLoop();
 	Core::Shutdown();
-}
 
+	particleSystem.Shutdown();
+	scene.Shutdown();
+
+}
