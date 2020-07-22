@@ -28,6 +28,8 @@ namespace nc
 
 		virtual void OnCollision(Actor* actor) {}
 
+		float GetRadius();
+
 		bool IsDestroy() { return m_destroy; }
 		void SetScene(class Scene* scene) { m_scene = scene; }
 		Transform& GetTransform()  { return m_transform; }

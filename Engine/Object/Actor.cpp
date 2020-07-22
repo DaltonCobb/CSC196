@@ -42,5 +42,10 @@ bool Actor::Load(const std::string& filename)
 
 	}
 
+	float Actor::GetRadius()
+	{
+		return m_shape.GetRadius() * m_transform.scale;
+	}
+
 
 }

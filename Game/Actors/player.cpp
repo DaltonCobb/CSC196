@@ -3,7 +3,7 @@
 #include <fstream>
 #include "Projectile.h"
 #include "..\Engine\Object\Scene.h"
-
+#include "Graphics/ParticalSystem.h"
 namespace nc
 {
 
@@ -48,7 +48,7 @@ namespace nc
 			m_scene->AddActor(projectile);
 		}
 		//Player
-		//	position = position + (-direction * speed);
+		//	get force
 		nc::Vector2 force;
 		if (Core::Input::IsPressed('W')) { force = nc::Vector2::forward * m_thrust; }
 		//point force in direction of ship
@@ -69,6 +69,11 @@ namespace nc
 
 		if (Core::Input::IsPressed('A')) { m_transform.angle = m_transform.angle - (nc::DegresToRadians(m_ratation) * dt); }
 		if (Core::Input::IsPressed('D')) { m_transform.angle = m_transform.angle + (nc::DegresToRadians(m_ratation) * dt); }
+
+		if (force.LengthSqr() > 0)
+		{
+			g_particleSystem.Create(m_transform.position, m_transform.angle + nc::PI, 10, 1, 1, nc::Color{ 1,1,1 }, 100, 200);
+		}
 
 		m_transform.Update();
 	}
